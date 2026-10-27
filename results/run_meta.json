@@ -1,0 +1,41 @@
+{
+  "run_date": "2026-10-27",
+  "sessions": [
+    "2020-01-24",
+    "2026-10-26"
+  ],
+  "assets": [
+    "DI1F29",
+    "DI1F35",
+    "USDBRL",
+    "IBOV",
+    "NTNB35"
+  ],
+  "factor_sets": {
+    "core": [
+      "d_ust10y_bp",
+      "d_slope_bp",
+      "r_spx"
+    ],
+    "core_vix": [
+      "d_ust10y_bp",
+      "d_slope_bp",
+      "r_spx",
+      "d_vix"
+    ],
+    "core_lag1": [
+      "d_ust10y_bp",
+      "d_slope_bp",
+      "r_spx",
+      "d_ust10y_bp_lag1",
+      "d_slope_bp_lag1",
+      "r_spx_lag1"
+    ]
+  },
+  "factors_pending_at_d0": [
+    "r_brent",
+    "r_usd_broad"
+  ],
+  "tesouro_error": null,
+  "post_days_available": []
+}
