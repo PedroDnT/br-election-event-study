@@ -177,7 +177,11 @@ def main():
     assets = [a for a in config.ASSETS if a in moves]
     out = model.run(moves, assets, factor_sets)
     OUT.mkdir(exist_ok=True)
-    moves.to_csv(OUT / "inputs_moves.csv", index_label="date")
+    # The repo is public: S&P 500 and VIX are copyrighted, so their values (and
+    # changes derived from them) stay out of the committed CSV. fetch.py
+    # rebuilds them.
+    licensed = [c for c in moves if c.startswith(("r_spx", "d_vix"))]
+    moves.drop(columns=licensed).to_csv(OUT / "inputs_moves.csv", index_label="date")
     out["event"].to_csv(OUT / "event_table.csv", index=False)
     out["coefs"].to_csv(OUT / "coefficients.csv", index=False)
     out["stability"].to_csv(OUT / "stability.csv", index=False)

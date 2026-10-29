@@ -54,6 +54,7 @@ model used) and one chart per asset in `results/charts/`.
 | S&P 500, VIX | FRED | Copyright S&P DJI and Cboe: do not publish raw values |
 
 Raw files stay in `data/raw/`, which git ignores. `results/inputs_moves.csv`
-holds derived daily changes only.
+holds daily changes only, and leaves out the S&P 500 and VIX columns because
+this repository is public. `python run.py --refresh` rebuilds them.
 
 All times are Brasília (UTC-3).
