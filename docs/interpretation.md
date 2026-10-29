@@ -1,6 +1,6 @@
 # Interpretation and limits
 
-Run of 2026-10-27, data through 26/10 (D0). Numbers are in
+Runs of 2026-10-27 (D0) and 2026-10-29 (D+1, cross-section). Numbers are in
 `results/RESULTS.md`. This page does not claim a cause.
 
 ## What the data shows
@@ -29,12 +29,33 @@ Run of 2026-10-27, data through 26/10 (D0). Numbers are in
    −17.7% and closed −15.7%. The first trades are not synchronized prices, so
    treat this as description.
 
-## Reversal (pending)
+## Reversal (D+1 measured, D+2 and D+3 partial)
 
-D+1 to D+3 (27/10 to 29/10) are not loaded yet. Rerun `python run.py --refresh`
-when they are. Before you read a reversal, check `docs/event_log.md`: Treasury
-buybacks on those days push rates down for a reason other than a change of
-view.
+Run of 2026-10-29. The model needs US data, and FRED has UST yields only
+through 27/10, so the modelled reversal covers D+1 only.
+
+- **D+1 (27/10), core model:** rates gave back a small part. DI1F29 −43 bp
+  residual (16% of the D0 residual), DI1F35 11%, NTN-B 11%, USD/BRL 14%.
+  Ibovespa did not reverse: its residual grew by 6%.
+- **28/10, observed only (no model yet):** DI1F29 +6 bp, DI1F35 +22 bp,
+  USD/BRL +0.2%, Ibovespa −2.7%. The rate reversal stopped and equities kept
+  falling.
+- Treasury buybacks were reported for these days (`docs/event_log.md`). The
+  D+1 fall in rates can come from the buybacks, not from a change of view.
+
+## Exporters versus domestic stocks (no model)
+
+From the 23/10 close to D0, B3's domestic indices fell about twice as much as
+the Ibovespa: consumption −30.6%, real estate −34.4%, small caps −31.4%. The
+4 exporters rose: Suzano +9.6%, Embraer +8.5%, Vale +3.9%, Klabin +3.2%. In
+USD terms the exporters were roughly flat (−4.8% to +1.7%), so their BRL gain
+is about the fall of the real. Banco do Brasil (−34.7%) fell with the domestic
+group; Petrobras (−8.5%) fell less than the Ibovespa. Through 28/10 the split
+widened: domestic indices −34% to −41%, Ibovespa −18.2%.
+
+A reading consistent with this: the market priced a higher domestic risk and
+rates path, not a fall of Brazilian assets in general. The groups are a stated
+choice (`src/crosssection.py`), not a full sector study.
 
 ## Limits
 
@@ -51,7 +72,8 @@ view.
 - **NTN-B is Tesouro Direto,** a retail morning rate in steps of 1 bp. It is
   not the ANBIMA indicative rate. On 26/10 its morning rate already includes
   the shock.
-- **Small factor set.** Brent and the broad dollar index are not yet
+- **Small factor set.** Brent joined as a robustness factor on 29/10 and
+  changes the σ multiples by less than 1. The broad dollar index is not yet
   published for D0. DXY, CDS and EWZ have no free licensed source. An
   emerging-market peer control (MXN, ZAR) is the next useful addition.
 - **DI1F29 on 23/10:** the 23/10 row has a settlement rate of 12.642%, and

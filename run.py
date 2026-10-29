@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from src import config, dataset, fetch, model
+from src import config, crosssection, dataset, fetch, model
 
 OUT = Path(__file__).resolve().parent / "results"
 
@@ -76,7 +76,7 @@ def _fmt(asset, v):
     return f"{v:+.1f} bp" if config.ASSETS[asset]["kind"] == "rate" else f"{100 * v:+.2f}%"
 
 
-def write_results_md(event, opening, top, moves, pending):
+def write_results_md(event, opening, top, moves, pending, xs):
     main = event[(event.factors == "core") & (event.est_end == "spec")
                  & (event.window == config.MAIN_WINDOW)]
     lines = ["# Results", "",
@@ -97,8 +97,8 @@ def write_results_md(event, opening, top, moves, pending):
               f"Not yet published for D0: {', '.join(pending) or 'none'}.", "",
               "## Robustness: residual / sd (OOS) on D0", "",
               "| Asset | " + " | ".join(f"{e} {w}d" for e in config.EST_ENDS for w in config.WINDOWS)
-              + " | +VIX | +lag-1 factors |",
-              "|---|" + "---|" * (len(config.EST_ENDS) * len(config.WINDOWS) + 2)]
+              + " | +VIX | +lag-1 factors | +Brent |",
+              "|---|" + "---|" * (len(config.EST_ENDS) * len(config.WINDOWS) + 3)]
     d0 = event[event.day == "D0"]
     for a in main.asset.unique():
         cells = []
@@ -106,7 +106,7 @@ def write_results_md(event, opening, top, moves, pending):
             for w in config.WINDOWS:
                 v = d0[(d0.asset == a) & (d0.factors == "core") & (d0.est_end == e) & (d0.window == w)]
                 cells.append(f"{v.resid_over_sd_oos.iloc[0]:+.1f}" if len(v) else "—")
-        for fs in ("core_vix", "core_lag1"):
+        for fs in ("core_vix", "core_lag1", "core_brent"):
             v = d0[(d0.asset == a) & (d0.factors == fs) & (d0.est_end == "spec") & (d0.window == config.MAIN_WINDOW)]
             cells.append(f"{v.resid_over_sd_oos.iloc[0]:+.1f}" if len(v) else "—")
         lines.append(f"| {a} | " + " | ".join(cells) + " |")
@@ -140,6 +140,14 @@ def write_results_md(event, opening, top, moves, pending):
     for a in main.asset.unique():
         lines.append(f"| {a} | {_fmt(a, moves.at[pd.Timestamp('2026-10-05'), a])} | "
                      f"{_fmt(a, fr[a].sum())} | {_fmt(a, moves.at[pd.Timestamp(config.D0), a])} |")
+    lines += ["", "## Exporters versus domestic stocks (log returns from the 23/10 close, no model)", "",
+              "Groups fixed before looking at returns: exporters = privately controlled, mostly USD revenue; "
+              "domestic = B3 consumption, real estate and small-cap indices; state-controlled kept apart.", "",
+              "| Name | Group | Day | Return that day | Cumulative | Cumulative vs Ibovespa | Cumulative in USD |",
+              "|---|---|---|---|---|---|---|"]
+    for _, r in xs.sort_values(["day", "group", "name"]).iterrows():
+        lines.append(f"| {r['name']} | {r.group} | {r.day} | {100 * r.ret_day:+.2f}% | {100 * r.ret_cum:+.2f}% | "
+                     f"{100 * r.ret_cum_vs_ibov:+.2f}% | {100 * r.ret_cum_usd:+.2f}% |")
     (OUT / "RESULTS.md").write_text("\n".join(lines) + "\n")
 
 
@@ -161,6 +169,8 @@ def main():
                    "core_lag1": (*config.CORE_FACTORS, *(f"{f}_lag1" for f in config.CORE_FACTORS))}
     pending = [f for f in ("r_brent", "r_usd_broad")
                if d0 not in moves.index or pd.isna(moves.at[d0, f])]
+    if "r_brent" not in pending:
+        factor_sets["core_brent"] = (*config.CORE_FACTORS, "r_brent")
     if not pending:
         factor_sets["full"] = (*config.CORE_FACTORS, *config.EXTRA_FACTORS)
 
@@ -184,7 +194,17 @@ def main():
         kind = config.ASSETS[a]["kind"]
         chart(out["event"], moves, a, 1.0 if kind == "rate" else 100.0, "bp" if kind == "rate" else "log %")
 
-    write_results_md(out["event"], opening, pd.DataFrame(top), moves, pending)
+    xs_raw = crosssection.fetch(date.fromisoformat(args.through), args.refresh)
+    # No model here, so B3 sessions do not wait for US data: keep every session
+    # that has both an Ibovespa level and a DOL front settlement.
+    ibov_b3 = raw["IBOV"].assign(trade_date=pd.to_datetime(raw["IBOV"]["trade_date"])).set_index("trade_date")["level"]
+    dol_b3 = dataset._dol_front(raw["DOL"], ibov_b3.index)
+    fx_b3 = np.log(dol_b3["level"] / dol_b3["prev_same"]).dropna()
+    b3_sessions = ibov_b3.index.intersection(fx_b3.index)
+    fx_index = np.exp(fx_b3.reindex(b3_sessions).cumsum())
+    xs = crosssection.table(xs_raw, ibov_b3, fx_index, b3_sessions)
+    xs.to_csv(OUT / "cross_section.csv", index=False)
+    write_results_md(out["event"], opening, pd.DataFrame(top), moves, pending, xs)
 
     meta = {
         "run_date": date.today().isoformat(),

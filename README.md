@@ -20,7 +20,8 @@ python run.py                    # reuses data/raw/ (git-ignored)
 
 Outputs go to `results/`: `RESULTS.md` (the tables), `event_table.csv`,
 `coefficients.csv`, `stability.csv`, `opening_gap.csv`,
-`largest_prior_residuals.csv`, `inputs_moves.csv` (the aligned daily moves the
+`largest_prior_residuals.csv`, `cross_section.csv` (exporters versus
+domestic stocks, no model), `inputs_moves.csv` (the aligned daily moves the
 model used) and one chart per asset in `results/charts/`.
 
 ## Method in one screen
@@ -30,8 +31,8 @@ model used) and one chart per asset in `results/charts/`.
   contract), Ibovespa (log return), NTN-B 2035 (Tesouro Direto morning buy
   rate, bp).
 - Factors (FRED): ΔUST10Y and Δ(UST10Y − UST2Y) in bp, S&P 500 log return.
-  VIX and lag-1 factors are robustness runs. Brent and the broad dollar index
-  join when their D0 values are published.
+  VIX, Brent and lag-1 factors are robustness runs. The broad dollar index
+  joins when its D0 value is published.
 - A session is kept only when every core input has a value, so asset and factor
   changes cover the same interval.
 - OLS with intercept and HAC (5 lags) errors, fitted only on data up to the

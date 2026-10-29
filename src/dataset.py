@@ -13,6 +13,10 @@ import pandas as pd
 
 from . import config
 
+# Fixed-date national holidays (B3 closed). Movable ones never fall on the
+# first business days of a month in the window this rule covers.
+FIXED_HOLIDAYS = {(1, 1), (4, 21), (5, 1), (9, 7), (10, 12), (11, 2), (11, 15), (11, 20), (12, 25)}
+
 
 def _di(df: pd.DataFrame) -> pd.DataFrame:
     df = df.assign(trade_date=pd.to_datetime(df["trade_date"])).set_index("trade_date").sort_index()
@@ -30,8 +34,20 @@ def _dol_front(dol: pd.DataFrame, sessions: pd.DatetimeIndex) -> pd.DataFrame:
     px = dol.pivot_table(index="trade_date", columns="ticker", values="settlement_price")
     months = dol.drop_duplicates("ticker").set_index("ticker")["contract_month"].sort_values()
     # Expiry = first session in the contract month (B3: first business day).
-    # A contract whose month starts after the last session has not expired.
-    pos = {t: (sessions.searchsorted(m) if m <= sessions[-1] else np.inf) for t, m in months.items()}
+    # Expiry index in the session calendar. A month that starts after the last
+    # session gets its first business day from a weekday rule plus the fixed
+    # national holidays that can fall on a month's first days, so the roll date
+    # does not move when later sessions load.
+    pos = {}
+    for t, m in months.items():
+        if m <= sessions[-1]:
+            pos[t] = sessions.searchsorted(m)
+        else:
+            first = pd.bdate_range(m, m + pd.Timedelta(days=10))
+            first = [d for d in first if (d.month, d.day) not in FIXED_HOLIDAYS][0]
+            ext = sessions.append(pd.bdate_range(sessions[-1] + pd.Timedelta(days=1), first))
+            ext = ext[[(d.month, d.day) not in FIXED_HOLIDAYS for d in ext]]
+            pos[t] = ext.searchsorted(first)
     rows = []
     for i, day in enumerate(sessions):
         live = [t for t, p in pos.items() if i < p - config.DOL_ROLL_SESSIONS]

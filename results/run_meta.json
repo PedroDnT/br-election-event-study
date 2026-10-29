@@ -1,8 +1,8 @@
 {
-  "run_date": "2026-10-27",
+  "run_date": "2026-10-29",
   "sessions": [
     "2020-01-24",
-    "2026-10-26"
+    "2026-10-27"
   ],
   "assets": [
     "DI1F29",
@@ -30,12 +30,19 @@
       "d_ust10y_bp_lag1",
       "d_slope_bp_lag1",
       "r_spx_lag1"
+    ],
+    "core_brent": [
+      "d_ust10y_bp",
+      "d_slope_bp",
+      "r_spx",
+      "r_brent"
     ]
   },
   "factors_pending_at_d0": [
-    "r_brent",
     "r_usd_broad"
   ],
   "tesouro_error": null,
-  "post_days_available": []
+  "post_days_available": [
+    "2026-10-27"
+  ]
 }
