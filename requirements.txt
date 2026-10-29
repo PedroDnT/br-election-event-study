@@ -1,0 +1,7 @@
+pandas>=2.2
+numpy>=1.26
+statsmodels>=0.14
+matplotlib>=3.8
+requests>=2.31
+# SILO read SDK, from the SILO-BZ repo:
+silo-client @ git+https://github.com/PedroDnT/SILO-BZ.git#subdirectory=sdk
