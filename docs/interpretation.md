@@ -37,8 +37,9 @@ Runs of 2026-10-27 (D0), 2026-10-29 (D+1, cross-section) and 2026-10-30 (D+2, ch
 
 ## Reversal (D+1 and D+2 measured; D+3 pending)
 
-Run of 2026-10-30, core model. UST yields are available through 28/10, and
-29/10 is not in SILO-BZ yet.
+Run of 2026-10-30, core model. SILO-BZ has 29/10, but FRED has UST and S&P 500
+only through 28/10. A session needs every core input, so the model stops at
+D+2. D+3 waits for FRED.
 
 | Asset | D+1 residual | D+2 residual | Share of D0 residual reversed by D+2 |
 |---|---|---|---|
@@ -66,8 +67,9 @@ the Ibovespa: consumption −30.6%, real estate −34.4%, small caps −31.4%. T
 4 exporters rose: Suzano +9.6%, Embraer +8.5%, Vale +3.9%, Klabin +3.2%. In
 USD terms the exporters were roughly flat (−4.8% to +1.7%), so their BRL gain
 is about the fall of the real. Banco do Brasil (−34.7%) fell with the domestic
-group; Petrobras (−8.5%) fell less than the Ibovespa. Through 28/10 the split
-widened: domestic indices −34% to −41%, Ibovespa −18.2%.
+group; Petrobras (−8.5%) fell less than the Ibovespa. Through 29/10 (D+3) the split
+widened: domestic indices −37% to −45%, Ibovespa −19.2%. This table needs no
+factor model, so it covers D+3 already.
 
 A reading consistent with this: the market priced a higher domestic risk and
 rates path, not a fall of Brazilian assets in general. The groups are a stated
