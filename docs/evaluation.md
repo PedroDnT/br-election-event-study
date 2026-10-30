@@ -48,3 +48,17 @@ follows.
 D+1 to D+3 reversal (rerun when the sessions land), EM peer control (MXN,
 ZAR), Brent and broad dollar when published, exporters versus domestic
 equities.
+
+## Status of the evaluation points (2026-10-30)
+
+| Point | Status |
+|---|---|
+| Event date is not the information date | Done: 30/09 robustness run, residual called a surprise |
+| z-score saturates | Done: sd multiple, multiple of the largest earlier error, history length |
+| Collinear factors | Done: 10Y level + slope + S&P 500, VIF 1.0 to 1.4 |
+| Closes are not synchronous | Done for FX and for NTN-B (lag-1 run, clock-matched 2-day check) |
+| In-sample sd too small | Done: out-of-sample errors |
+| Same-day confounders | Done: sourced `interventions.csv`, flags in the event table. Finding: the fiscal statement was 27/10, not D0 |
+| No EM peer control | Open: MXN and ZAR wait for Fed H.10 (about 02/11) |
+| Contract roll and ageing | Done: one contract per change, PRE 720 and 2520 vertices, roll tests |
+| Data license | Done: S&P 500 and VIX not committed |

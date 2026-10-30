@@ -98,6 +98,10 @@ def build(raw: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     levels = core.copy()
     for k in ("VIX", "BRENT", "USD_BROAD"):
         levels[k] = f[k].reindex(sessions)
+    for name in config.PRE_TENORS:
+        if name in raw:
+            pre = raw[name].assign(trade_date=pd.to_datetime(raw[name]["trade_date"]))
+            levels[name] = pre.set_index("trade_date")["rate"].reindex(sessions)
     if "TESOURO" in raw:
         levels["NTNB35"] = _ntnb(raw["TESOURO"]).reindex(sessions)
 
@@ -107,8 +111,9 @@ def build(raw: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Same contract on both days: a roll never shows up as a return.
     m["USDBRL"] = np.log(dol["level"] / dol["prev_same"])
     m["IBOV"] = np.log(levels["IBOV"]).diff()
-    if "NTNB35" in levels:
-        m["NTNB35"] = levels["NTNB35"].diff() * 100
+    for name in ("NTNB35", *config.PRE_TENORS):
+        if name in levels:
+            m[name] = levels[name].diff() * 100
     m["d_ust10y_bp"] = levels["UST10Y"].diff() * 100
     m["d_slope_bp"] = (levels["UST10Y"] - levels["UST2Y"]).diff() * 100
     m["r_spx"] = np.log(levels["SPX"]).diff()
