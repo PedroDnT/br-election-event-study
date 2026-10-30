@@ -21,7 +21,13 @@ ASSETS = {
     "USDBRL": {"kind": "price", "label": "USD/BRL, DOL front settlement"},
     "IBOV":   {"kind": "price", "label": "Ibovespa level"},
     "NTNB35": {"kind": "rate", "label": "NTN-B 2035, Tesouro Direto buy rate (morning)"},
+    # Constant-tenor B3 PRE vertices: no contract ageing, robustness for DI.
+    "PRE720": {"kind": "rate", "label": "B3 PRE curve, 720-day vertex"},
+    "PRE2520": {"kind": "rate", "label": "B3 PRE curve, 2520-day vertex"},
 }
+PRE_TENORS = {"PRE720": 720, "PRE2520": 2520}
+TWO_DAY_ASSETS = ("NTNB35", "DI1F29", "DI1F35")
+TWO_DAY_END = date(2026, 10, 27)   # 23/10 -> 27/10, same span for every asset
 
 # The DOL front contract rolls this many sessions before its expiry
 # (the first business day of the contract month).

@@ -48,6 +48,11 @@ def silo_contract(silo, ticker, start, end, refresh):
                    lambda: _silo_series(silo, silo.future_series, ticker, start=start, end=end))
 
 
+def silo_pre(silo, tenor, start, end, refresh):
+    return _cached(f"silo_PRE{tenor}.csv", refresh,
+                   lambda: _silo_series(silo, silo.curve_history, "PRE", tenor, start=start, end=end))
+
+
 def silo_ibov(silo, start, end, refresh):
     return _cached("silo_IBOV.csv", refresh,
                    lambda: _silo_series(silo, silo.index_history_all, "IBOV", start=start, end=end))
@@ -112,6 +117,8 @@ def fetch_all(end: date, refresh: bool = False, with_tesouro: bool = True):
         "IBOV": silo_ibov(silo, start, end, refresh),
         "BOVA11": silo_bova11(silo, date(2026, 9, 1), end, refresh),
     }
+    for name, tenor in config.PRE_TENORS.items():
+        out[name] = silo_pre(silo, tenor, start, end, refresh)
     for name, sid in config.FRED.items():
         out[name] = fred(sid, start, refresh)
     if with_tesouro:

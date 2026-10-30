@@ -1,15 +1,17 @@
 {
-  "run_date": "2026-10-29",
+  "run_date": "2026-10-30",
   "sessions": [
     "2020-01-24",
-    "2026-10-27"
+    "2026-10-28"
   ],
   "assets": [
     "DI1F29",
     "DI1F35",
     "USDBRL",
     "IBOV",
-    "NTNB35"
+    "NTNB35",
+    "PRE720",
+    "PRE2520"
   ],
   "factor_sets": {
     "core": [
@@ -43,6 +45,7 @@
   ],
   "tesouro_error": null,
   "post_days_available": [
-    "2026-10-27"
+    "2026-10-27",
+    "2026-10-28"
   ]
 }

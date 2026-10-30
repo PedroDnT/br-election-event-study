@@ -52,8 +52,9 @@ def event_rows(moves, asset, factors, res, days):
     return rows
 
 
-def run(moves: pd.DataFrame, assets, factor_sets: dict) -> dict:
-    """factor_sets: name -> tuple of factor columns."""
+def run(moves: pd.DataFrame, assets, factor_sets: dict, flags: dict | None = None) -> dict:
+    """factor_sets: name -> tuple of factor columns. flags: date -> text."""
+    flags = flags or {}
     d0 = pd.Timestamp(config.D0)
     post = [d for d in moves.index if d > d0][: config.POST_DAYS]
     event, coefs, stability, errors = [], [], [], {}
@@ -98,6 +99,44 @@ def run(moves: pd.DataFrame, assets, factor_sets: dict) -> dict:
                             "oos_history_start": e.index.min().date() if len(e) else None,
                             "reversal_share": (-(cum - r0) / r0) if k else np.nan,
                             "r2": res.rsquared,
+                            "largest_prior_abs": float(e.abs().max()),
+                            "x_largest_prior": abs(r["residual"]) / float(e.abs().max()),
+                            "intervention": flags.get(r["date"], ""),
                         })
     return {"event": pd.DataFrame(event), "coefs": pd.DataFrame(coefs),
             "stability": pd.DataFrame(stability), "errors": errors}
+
+
+def two_day_check(levels: pd.DataFrame, assets, factors=config.CORE_FACTORS, window: int = config.MAIN_WINDOW):
+    """Clock-matched check: 2-session changes ending on config.TWO_DAY_END.
+
+    Tesouro Direto morning rates and B3 settlements sit at different times
+    within a day, but both are measured at the same two dates here (23/10 and
+    27/10), so the span is the same. It also spans D+1: Treasury buybacks and
+    the fiscal statement of 27/10 are inside it. Observations overlap, so the
+    HAC errors use the lags set in config.
+    """
+    m = pd.DataFrame(index=levels.index)
+    for a in assets:
+        if a in levels:
+            m[a] = levels[a].diff(2) * 100
+    m["d_ust10y_bp"] = levels["UST10Y"].diff(2) * 100
+    m["d_slope_bp"] = (levels["UST10Y"] - levels["UST2Y"]).diff(2) * 100
+    m["r_spx"] = np.log(levels["SPX"]).diff(2)
+    end = pd.Timestamp(config.TWO_DAY_END)
+    rows = []
+    for a in [x for x in assets if x in m]:
+        try:
+            res, _ = fit(m, a, factors, config.PRE_EVENT, window)
+        except ValueError:
+            continue
+        e = oos_errors(m, a, factors, config.PRE_EVENT, window)
+        ev = event_rows(m, a, factors, res, [end])
+        if not ev:
+            continue
+        r = ev[0]
+        rows.append({"asset": a, "from": str(pd.Timestamp(config.PRE_EVENT).date()),
+                     "to": str(end.date()), **r, "sd_oos": float(e.tail(window).std()),
+                     "resid_over_sd_oos": r["residual"] / float(e.tail(window).std()),
+                     "x_largest_prior": abs(r["residual"]) / float(e.abs().max())})
+    return pd.DataFrame(rows)

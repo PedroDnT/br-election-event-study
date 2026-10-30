@@ -16,11 +16,12 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python run.py --refresh          # downloads every input, then runs
 python run.py                    # reuses data/raw/ (git-ignored)
+python -m pytest tests           # offline tests, no network
 ```
 
 Outputs go to `results/`: `RESULTS.md` (the tables), `event_table.csv`,
 `coefficients.csv`, `stability.csv`, `opening_gap.csv`,
-`largest_prior_residuals.csv`, `cross_section.csv` (exporters versus
+`largest_prior_residuals.csv`, `two_day_check.csv`, `cross_section.csv` (exporters versus
 domestic stocks, no model), `inputs_moves.csv` (the aligned daily moves the
 model used) and one chart per asset in `results/charts/`.
 
@@ -33,6 +34,8 @@ model used) and one chart per asset in `results/charts/`.
 - Factors (FRED): ΔUST10Y and Δ(UST10Y − UST2Y) in bp, S&P 500 log return.
   VIX, Brent and lag-1 factors are robustness runs. The broad dollar index
   joins when its D0 value is published.
+- `docs/interventions.csv` lists same-day events with sources; the event table
+  carries a flag column from it.
 - A session is kept only when every core input has a value, so asset and factor
   changes cover the same interval.
 - OLS with intercept and HAC (5 lags) errors, fitted only on data up to the
